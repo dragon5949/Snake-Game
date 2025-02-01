@@ -1,0 +1,3 @@
+# Download the following modules using the following commands in Powershell
+1. Pygame module
+pip install pygame
