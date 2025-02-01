@@ -1,0 +1,128 @@
+import pygame
+import time
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+SNAKE_SIZE = 20
+SNAKE_SPEED = 10
+
+#colours
+BLACK = (226,180,189)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+# screen
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game")
+
+# Snake starting pnt
+snake_x = WIDTH // 2
+snake_y = HEIGHT // 2
+
+# Snake starting speed
+snake_x_change = 0
+snake_y_change = 0
+
+# s body
+snake_body = []
+body_length = 1
+
+# Food spawn pnts
+food_x = random.randrange(0, WIDTH - SNAKE_SIZE, SNAKE_SIZE)
+food_y = random.randrange(0, HEIGHT - SNAKE_SIZE, SNAKE_SIZE)
+
+# Score
+score = 0
+
+# Game over flag
+game_over = False
+
+# Font
+font = pygame.font.Font(None, 36)
+
+
+def show_message(message, color, y_offset=0):
+    message_surface = font.render(message, True, color)
+    message_rect = message_surface.get_rect()
+    message_rect.center = (WIDTH // 2, HEIGHT // 2 + y_offset)
+    screen.blit(message_surface, message_rect)
+
+
+# to reset the game
+def reset_game():
+    global snake_x, snake_y, snake_x_change, snake_y_change, snake_body, body_length, score, game_over, food_x, food_y
+    snake_x = WIDTH // 2
+    snake_y = HEIGHT // 2
+    snake_x_change = 0
+    snake_y_change = 0
+    snake_body = []
+    body_length = 1
+    score = 0
+    food_x = random.randrange(0, WIDTH - SNAKE_SIZE, SNAKE_SIZE)
+    food_y = random.randrange(0, HEIGHT - SNAKE_SIZE, SNAKE_SIZE)
+    game_over = False
+
+
+# main game
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                snake_x_change = -SNAKE_SIZE
+                snake_y_change = 0
+            elif event.key == pygame.K_RIGHT:
+                snake_x_change = SNAKE_SIZE
+                snake_y_change = 0
+            elif event.key == pygame.K_UP:
+                snake_y_change = -SNAKE_SIZE
+                snake_x_change = 0
+            elif event.key == pygame.K_DOWN:
+                snake_y_change = SNAKE_SIZE
+                snake_x_change = 0
+
+    snake_x += snake_x_change
+    snake_y += snake_y_change
+
+    if snake_x >= WIDTH or snake_x < 0 or snake_y >= HEIGHT or snake_y < 0:
+        game_over = True
+
+    # S body
+    snake_head = [snake_x, snake_y]
+    snake_body.append(snake_head)
+    if len(snake_body) > body_length:
+        del snake_body[0]
+
+    for segment in snake_body[:-1]:
+        if segment == snake_head:
+            game_over = True
+
+    # Food
+    if snake_x == food_x and snake_y == food_y:
+        food_x = random.randrange(0, WIDTH - SNAKE_SIZE, SNAKE_SIZE)
+        food_y = random.randrange(0, HEIGHT - SNAKE_SIZE, SNAKE_SIZE)
+        body_length += 1
+        score += 1
+
+    screen.fill(BLACK)
+    for segment in snake_body:
+        pygame.draw.rect(screen, GREEN, [segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE])
+
+    pygame.draw.rect(screen, RED, [food_x, food_y, SNAKE_SIZE, SNAKE_SIZE])
+
+    if game_over:
+        show_message("Game Over! Score: " + str(score), RED, -50)
+        show_message("Press R to Play Again", RED, 50)
+        pygame.display.update()
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_r]:
+            reset_game()
+
+    pygame.display.update()
+
+    time.sleep(1/SNAKE_SPEED)
